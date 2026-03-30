@@ -58,7 +58,17 @@ def ingredients_to_dataframe(ingredients: list[Ingredient]) -> pd.DataFrame:
     # - Or use dataclasses.asdict() if you want to be fancy
     #
     # Delete the line below and write your implementation:
-    return pd.DataFrame({"_not_implemented": [True]})
+    data = [
+        {
+            "name": ing.name,
+            "category": ing.category,
+            "health_score": ing.health_score,
+            "description": ing.description,
+            "found_in_database": ing.found_in_database,
+        }
+        for ing in ingredients
+    ]
+    return pd.DataFrame(data)
     # ============================================================
 
 
@@ -93,7 +103,7 @@ def filter_dataframe_by_category(
     # Use boolean indexing: df[df['column'] == value]
     #
     # Delete the line below and write your implementation:
-    return df
+    return df[df['category'] == category]
     # ============================================================
 
 
@@ -125,7 +135,7 @@ def sort_dataframe_by_score(
     # Use df.sort_values('column', ascending=...)
     #
     # Delete the line below and write your implementation:
-    return df
+    return df.sort_values('health_score', ascending=ascending)
     # ============================================================
 
 
@@ -168,11 +178,11 @@ def get_summary_statistics(df: pd.DataFrame) -> dict:
     #
     # Delete the lines below and write your implementation:
     return {
-        "total_count": 0,
-        "avg_score": 0.0,
-        "min_score": 0,
-        "max_score": 0,
-        "category_counts": {},
+        "total_count": len(df),
+        "avg_score": df['health_score'].mean(),
+        "min_score": df['health_score'].min(),
+        "max_score": df['health_score'].max(),
+        "category_counts": df['category'].value_counts().to_dict(),
     }
     # ============================================================
 

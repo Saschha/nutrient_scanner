@@ -59,7 +59,11 @@ def calculate_overall_score(ingredients: list[Ingredient]) -> float:
     # - Be careful not to divide by zero
     #
     # Delete the line below and write your implementation:
-    return -1.0  # Indicates not implemented
+    if not ingredients:
+        return 5.0
+    weighted_sum = sum(ing.health_score * (1.0 if ing.found_in_database else 0.5) for ing in ingredients)
+    total_weights = sum(1.0 if ing.found_in_database else 0.5 for ing in ingredients)
+    return weighted_sum / total_weights  # Indicates not implemented
     # ============================================================
 
 
@@ -91,7 +95,14 @@ def get_score_label(score: float) -> str:
     # Use if/elif/else to return the appropriate label based on score
     #
     # Delete the line below and write your implementation:
-    return "Not Implemented"
+    if score >= 8:
+        return "Excellent"
+    elif score >= 6:
+        return "Good"
+    elif score >= 4:
+        return "Fair"
+    else:
+        return "Poor"
     # ============================================================
 
 
@@ -127,7 +138,10 @@ def count_by_category(ingredients: list[Ingredient]) -> dict[str, int]:
     # - Or use counts[category] = counts.get(category, 0) + 1
     #
     # Delete the line below and write your implementation:
-    return {}
+    counts = {}
+    for ing in ingredients:
+        counts[ing.category] = counts.get(ing.category, 0) + 1
+    return counts
     # ============================================================
 
 
@@ -168,7 +182,22 @@ def generate_recommendations(ingredients: list[Ingredient]) -> list[str]:
     # 6. If no recommendations, add a default message
     #
     # Delete the line below and write your implementation:
-    return ["Not implemented"]
+    recommendations = []
+    harmful = [i.name for i in ingredients if i.category == "harmful"]
+    unknown = [i.name for i in ingredients if i.category == "unknown"]
+    score = calculate_overall_score(ingredients)
+
+    if len(harmful) >= 3:
+        recommendations.append("Consider choosing a healthier alternative")
+    if harmful:
+        recommendations.append(f"Watch out for: {', '.join(harmful)}")
+    if unknown:
+        recommendations.append(f"Unknown ingredients detected: {', '.join(unknown)}")
+    if score >= 8:
+        recommendations.append("Great choice! This product has healthy ingredients")
+    if not recommendations:
+        recommendations.append("No specific recommendations.")
+    return recommendations
     # ============================================================
 
 
@@ -206,7 +235,21 @@ def format_analysis_summary(ingredients: list[Ingredient]) -> str:
     # - Use count_by_category() for the breakdown
     #
     # Delete the line below and write your implementation:
-    return "Not implemented"
+    score = calculate_overall_score(ingredients)
+    label = get_score_label(score)
+    counts = count_by_category(ingredients)
+
+    lines = [
+        "=== Ingredient Analysis Summary ===",
+        f"Total ingredients: {len(ingredients)}",
+        f"Overall health score: {score:.1f} ({label})",
+        "",
+        "Breakdown:",
+    ]
+    for category, count in counts.items():
+        lines.append(f"- {category.capitalize()}: {count}")
+
+    return "\n".join(lines)
     # ============================================================
 
 

@@ -150,7 +150,7 @@ def filter_by_category(
     # Use a list comprehension to filter ingredients where ing.category == category
     #
     # Delete the line below and write your implementation:
-    return []
+    return [ing for ing in ingredients if ing.category == category]
     # ============================================================
 
 
@@ -191,7 +191,7 @@ def sort_by_health_score(
     # - 'ascending=True' means reverse=False
     #
     # Delete the line below and write your implementation:
-    return ingredients
+    return sorted(ingredients, key=lambda ing: ing.health_score, reverse=not ascending)
     # ============================================================
 
 

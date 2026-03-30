@@ -54,7 +54,17 @@ class InvalidIngredientError(NutrientScannerError):
     # - Store the ingredient_name as an instance attribute for later access
     #
     # Delete the 'pass' and write your implementation:
-    pass
+    def __init__(self, ingredient_name: str):
+        self.ingredient_name = ingredient_name
+        if not ingredient_name.strip():
+            message = f"Invalid ingredient name: '{ingredient_name}' (empty or whitespace only)"
+        elif ingredient_name.isdigit():
+            message = f"Invalid ingredient name: '{ingredient_name}' (contains only numbers)"
+        elif len(ingredient_name) > 100:
+            message = f"Invalid ingredient name: '{ingredient_name[:20]}...' (too long)"
+        else:
+            message = f"Invalid ingredient name: '{ingredient_name}'"
+        super().__init__(message)
     # ============================================================
 
 
@@ -88,7 +98,14 @@ class APIError(NutrientScannerError):
     #     APIError: API Error: Rate limit exceeded (status code: 429)
     #
     # Delete the 'pass' and write your implementation:
-    pass
+    def __init__(self, message: str, status_code: Optional[int] = None, original_error: Optional[Exception] = None):
+        self.status_code = status_code
+        self.original_error = original_error
+        if status_code:
+            message = f"API Error: {message} (status code: {status_code})"
+        else:
+            message = f"API Error: {message}"
+        super().__init__(message)
     # ============================================================
 
 
@@ -148,7 +165,14 @@ def validate_ingredient_name(name: str) -> str:
     # - any(c.isalpha() for c in str) checks if there's at least one letter
     #
     # Delete the line below and write your implementation:
-    return name  # Not implemented - just returns input unchanged
+    cleaned = name.strip()
+    if not cleaned:
+        raise InvalidIngredientError(name)
+    if len(cleaned) > 100:
+        raise InvalidIngredientError(cleaned)
+    if not any(c.isalpha() for c in cleaned):
+        raise InvalidIngredientError(cleaned)
+    return cleaned.lower()  # Not implemented - just returns input unchanged
     # ============================================================
 
 
@@ -190,7 +214,14 @@ def safe_parse_ingredients(raw_text: str) -> tuple[list[str], list[str]]:
     # - Use str(error) to get the error message
     #
     # Delete the lines below and write your implementation:
-    return ([], [])  # Not implemented
+    valid_ingredients = []
+    error_messages = []
+    for item in raw_text.split(","):
+        try:
+            valid_ingredients.append(validate_ingredient_name(item))
+        except InvalidIngredientError as e:
+            error_messages.append(str(e))
+    return (valid_ingredients, error_messages)  # Not implemented
     # ============================================================
 
 
@@ -228,7 +259,15 @@ def safe_api_call(func, *args, max_retries: int = 3, **kwargs):
     # - Keep track of the last exception to include in APIError
     #
     # Delete the lines below and write your implementation:
-    return func(*args, **kwargs)  # No retry logic - just calls directly
+    import time
+    last_exception = None
+    for attempt in range(max_retries):
+        try:
+            return func(*args, **kwargs)
+        except Exception as e:
+            last_exception = e
+            time.sleep(1)
+    raise APIError(f"All {max_retries} retries failed", original_error=last_exception)  # No retry logic - just calls directly
     # ============================================================
 
 
